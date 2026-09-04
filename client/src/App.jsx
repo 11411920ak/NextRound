@@ -12,6 +12,7 @@ import DashboardPage from './pages/DashboardPage';
 import ProfileCompletePage from './pages/ProfileCompletePage';
 import ResumeUploadPage from './pages/ResumeUploadPage';
 import ResumeAnalysisPage from './pages/ResumeAnalysisPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 
 /**
  * ProfileGuard — wraps protected routes that require a complete profile.
@@ -46,6 +47,7 @@ function App() {
               <Route path="/resume/upload" element={<ResumeUploadPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
+              <Route path="/verify-email" element={<VerifyEmailPage />} />
               <Route path="/profile/complete" element={<ProfileCompletePage />} />
 
               {/* Default redirect */}

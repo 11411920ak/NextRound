@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import { BrainCircuit, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
+import GoogleSignInButton from '../components/GoogleSignInButton';
 
 const LoginPage = () => {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -16,7 +17,7 @@ const LoginPage = () => {
   const location = useLocation();
   const from = location.state?.from?.pathname || '/dashboard';
 
-  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const EMAIL_REGEX = /^[a-zA-Z0-9](?:[a-zA-Z0-9._%+-]*[a-zA-Z0-9])?@[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,}$/;
 
   const validateEmail = (val) => {
     if (!val) return 'Email is required.';
@@ -45,6 +46,15 @@ const LoginPage = () => {
     setLoading(true);
     try {
       const { data } = await api.post('/auth/login', form);
+
+      // Handle unverified email — redirect to verification
+      if (data.requiresVerification) {
+        login(data.token, data.user);
+        toast('Please verify your email first.', { icon: '📩' });
+        navigate('/verify-email', { replace: true });
+        return;
+      }
+
       login(data.token, data.user);
       toast.success(`Welcome back, ${data.user.name.split(' ')[0]}! 👋`);
       // Redirect to profile completion if first login
@@ -157,9 +167,20 @@ const LoginPage = () => {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="mt-6 pt-6 border-t border-white/8 text-center">
-            <p className="text-slate-400 text-sm">
+          {/* Google Sign-In */}
+          <div className="mt-6 pt-6 border-t border-white/8">
+            <div className="relative mb-5">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-dark-900 px-3 text-slate-500">or continue with</span>
+              </div>
+            </div>
+
+            <GoogleSignInButton />
+
+            <p className="text-slate-400 text-sm text-center mt-5">
               Don't have an account?{' '}
               <Link to="/signup" className="text-brand-400 hover:text-brand-300 font-medium transition-colors">
                 Create one free →

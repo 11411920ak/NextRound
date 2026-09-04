@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import { BrainCircuit, Mail, Lock, User, Eye, EyeOff, ArrowRight, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
+import GoogleSignInButton from '../components/GoogleSignInButton';
 
 const SignupPage = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
@@ -14,7 +15,7 @@ const SignupPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const EMAIL_REGEX = /^[a-zA-Z0-9](?:[a-zA-Z0-9._%+-]*[a-zA-Z0-9])?@[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,}$/;
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -52,9 +53,9 @@ const SignupPage = () => {
         password: form.password,
       });
       login(data.token, data.user);
-      toast.success('Account created! Let\'s set up your profile 🚀');
-      // New users always go to profile completion first
-      navigate('/profile/complete', { replace: true });
+      toast.success('Account created! Check your email for a verification code 📩');
+      // Redirect to email verification
+      navigate('/verify-email', { replace: true });
     } catch (err) {
       setError(err.response?.data?.error || 'Signup failed. Please try again.');
     } finally {
@@ -175,8 +176,20 @@ const SignupPage = () => {
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-white/8 text-center">
-            <p className="text-slate-400 text-sm">
+          <div className="mt-6 pt-6 border-t border-white/8">
+            {/* Google Sign-In */}
+            <div className="relative mb-5">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-dark-900 px-3 text-slate-500">or continue with</span>
+              </div>
+            </div>
+
+            <GoogleSignInButton />
+
+            <p className="text-slate-400 text-sm text-center mt-5">
               Already have an account?{' '}
               <Link to="/login" className="text-brand-400 hover:text-brand-300 font-medium transition-colors">
                 Sign in →

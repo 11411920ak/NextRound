@@ -20,9 +20,22 @@ const userSchema = new mongoose.Schema(
     },
     password_hash: {
       type: String,
-      required: [true, 'Password is required'],
+      required: function () { return this.authProvider !== 'google'; },
       minlength: [6, 'Password must be at least 6 characters'],
       select: false, // Never returned in queries by default
+    },
+    authProvider: {
+      type: String,
+      enum: ['local', 'google'],
+      default: 'local',
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verifyOTP: {
+      code: { type: String, default: null, select: false },
+      expiresAt: { type: Date, default: null, select: false },
     },
     target_role: {
       type: String,
@@ -74,6 +87,7 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.password_hash;
+  delete obj.verifyOTP;
   return obj;
 };
 
