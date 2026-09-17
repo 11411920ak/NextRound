@@ -29,17 +29,24 @@ const signup = async (req, res, next) => {
 
     // Strict email format validation
     if (!validator.isEmail(email)) {
-      return res.status(400).json({ error: 'Please provide a valid email address.' });
+      return res.status(400).json({
+        error: 'Email is not correct. Please provide a valid email address.',
+        field: 'email',
+      });
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+      return res.status(400).json({ error: 'Password must be at least 6 characters.', field: 'password' });
     }
 
     // Check for existing user
     const existing = await User.findOne({ email: email.toLowerCase() });
     if (existing) {
-      return res.status(409).json({ error: 'An account with this email already exists.' });
+      return res.status(409).json({
+        error: 'An account with this email already exists. Please sign in instead.',
+        field: 'email',
+        emailExists: true,
+      });
     }
 
     // Generate OTP for email verification
@@ -92,13 +99,20 @@ const login = async (req, res, next) => {
 
     // Strict email format validation
     if (!validator.isEmail(email)) {
-      return res.status(400).json({ error: 'Please provide a valid email address.' });
+      return res.status(400).json({
+        error: 'Email is not correct. Please provide a valid email address.',
+        field: 'email',
+      });
     }
 
     // Find user and include password_hash
     const user = await User.findOne({ email: email.toLowerCase() }).select('+password_hash');
     if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password.' });
+      return res.status(401).json({
+        error: 'No account found with this email address. Please check your email or create an account.',
+        field: 'email',
+        emailNotFound: true,
+      });
     }
 
     // Google-only users can't login with password
@@ -110,7 +124,7 @@ const login = async (req, res, next) => {
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid email or password.' });
+      return res.status(401).json({ error: 'Incorrect password. Please try again.', field: 'password' });
     }
 
     // Check email verification for local auth

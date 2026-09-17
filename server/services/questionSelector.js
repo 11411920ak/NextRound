@@ -190,12 +190,21 @@ const buildAggregationFilter = (filter) => {
  *  P2 — exact allowedDifficulty + specific target topic
  *  P3 — exact allowedDifficulty + any unasked question
  */
-const findFromDB = async (session, targetTopic, allowedDifficulty, recentTopics, askedTexts) => {
+/**
+ * Query DB for a suitable question with strict difficulty boundary.
+ * Returns a question document or null.
+ *
+ * Priority cascade:
+ *  P1 — exact allowedDifficulty + topic NOT in recentTopics (prefer fresh target or unasked topic)
+ *  P2 — exact allowedDifficulty + specific target topic
+ *  P3 — exact allowedDifficulty + any unasked question
+ */
+const findFromDB = async (session, targetTopic, allowedDifficulty, recentTopics, askedTexts, allExcludedIds = []) => {
   const categories = typeToCategory[session.interview_type] || ['technical'];
   const experienceLevels = expToLevels[session.experience] || ['all', 'fresher'];
   
   // Ensure all excluded IDs are converted to native mongoose ObjectIds
-  const excludeObjectIds = (session.asked_question_ids || [])
+  const excludeObjectIds = (allExcludedIds || [])
     .map((id) => {
       try {
         return typeof id === 'string' ? new mongoose.Types.ObjectId(id) : id;
@@ -218,7 +227,7 @@ const findFromDB = async (session, targetTopic, allowedDifficulty, recentTopics,
    * Pick a random non-duplicate using $sample for true randomisation.
    * Falls back to first result if all are semantically similar.
    */
-  const pickNonDuplicate = async (filter, sampleSize = 15) => {
+  const pickNonDuplicate = async (filter, sampleSize = 25) => {
     const [matchStage] = buildAggregationFilter(filter);
     const candidates = await Question.aggregate([
       { $match: matchStage },
@@ -273,13 +282,12 @@ const findFromDB = async (session, targetTopic, allowedDifficulty, recentTopics,
  * @returns {{ question: Object, source: 'database'|'ai_generated' }}
  */
 const selectNextQuestion = async (session, lastEval = null) => {
+  const Session = require('../models/Session');
+
   // ── 0. Re-fetch asked_question_ids for freshness (race-condition guard) ──
-  // If two submits race, the in-memory session may have stale exclusion IDs.
   try {
-    const Session = require('../models/Session');
     const freshSession = await Session.findById(session._id).select('asked_question_ids').lean();
     if (freshSession?.asked_question_ids?.length) {
-      // Merge any IDs the concurrent request already added
       const existingSet = new Set(session.asked_question_ids.map(String));
       for (const id of freshSession.asked_question_ids) {
         if (!existingSet.has(String(id))) {
@@ -289,6 +297,29 @@ const selectNextQuestion = async (session, lastEval = null) => {
       }
     }
   } catch (_) { /* proceed with current data if re-fetch fails */ }
+
+  // ── 0b. Collect historical questions from previous sessions if user is logged in ──
+  const allExcludedIds = [...(session.asked_question_ids || [])];
+  if (session.user_id) {
+    try {
+      const pastSessions = await Session.find({
+        user_id: session.user_id,
+        _id: { $ne: session._id },
+      })
+        .select('asked_question_ids')
+        .sort({ created_at: -1 })
+        .limit(10)
+        .lean();
+
+      for (const pS of pastSessions) {
+        if (Array.isArray(pS.asked_question_ids)) {
+          for (const qId of pS.asked_question_ids) {
+            allExcludedIds.push(qId);
+          }
+        }
+      }
+    } catch (_) {}
+  }
 
   // ── 1. Determine allowed difficulty pool ─────────────────────────────────
   const allowedDifficulty = getAllowedDifficulty(session);
@@ -330,7 +361,7 @@ const selectNextQuestion = async (session, lastEval = null) => {
   // ── 4. Fetch asked question texts for semantic dedup ────────────────────
   let askedTexts = [];
   try {
-    const askedDocs = await Question.find({ _id: { $in: session.asked_question_ids } })
+    const askedDocs = await Question.find({ _id: { $in: allExcludedIds } })
       .select('text')
       .lean();
     askedTexts = askedDocs.map((q) => q.text);
@@ -342,7 +373,8 @@ const selectNextQuestion = async (session, lastEval = null) => {
     targetTopic,
     allowedDifficulty,
     recentTopics,
-    askedTexts
+    askedTexts,
+    allExcludedIds
   );
 
   if (dbQuestion) {
@@ -359,9 +391,9 @@ const selectNextQuestion = async (session, lastEval = null) => {
     return { question: dbQuestion, source: 'database' };
   }
 
-  // ── 6. Fallback: AI generation with strict pool ──────────────────────────
+  // ── 6. Fallback: AI generation with strict pool & unique prompt ────────────
   console.log(
-    `[QSelector] No DB match. Requesting AI generation ` +
+    `[QSelector] No unasked DB match found. Requesting unique AI question from Gemini ` +
     `(pool=${allowedDifficulty}, subLevel=${nextSubDifficulty}, topic=${targetTopic || 'General'})...`
   );
 
@@ -372,11 +404,11 @@ const selectNextQuestion = async (session, lastEval = null) => {
     targetTopic || session.current_topic || 'General',
     allowedDifficulty,
     askedTexts,
-    nextSubDifficulty,    // ← new arg: sub-level hint
-    recentTopics          // ← new arg: topics to avoid
+    nextSubDifficulty,    // sub-level hint
+    recentTopics          // topics to avoid
   );
 
-  // Save AI-generated question to DB for future reuse
+  // Save AI-generated question to DB for future reuse and tracking
   const categories = typeToCategory[session.interview_type] || ['technical'];
   let savedQuestion;
   try {
@@ -393,7 +425,7 @@ const selectNextQuestion = async (session, lastEval = null) => {
       source: 'ai_generated',
       is_active: true,
     });
-    console.log(`[QSelector] AI question saved: ${savedQuestion._id}`);
+    console.log(`[QSelector] Unique AI question generated & saved: ${savedQuestion._id}`);
   } catch (err) {
     console.warn(`[QSelector] Could not save AI question: ${err.message}`);
     savedQuestion = {

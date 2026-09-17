@@ -11,10 +11,12 @@ const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 const CLAUDE_MODEL = process.env.AI_MODEL || 'claude-3-5-haiku-20241022';
 const GEMINI_MODELS = [
   process.env.GEMINI_MODEL,
-  'gemini-2.0-flash',
-  'gemini-2.0-flash-lite',
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-8b',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash',
+  'gemini-flash-latest',
+  'gemini-3.5-flash-lite',
+  'gemini-3.1-flash-lite',
+  'gemini-3.7-flash',
 ].filter(Boolean);
 const MAX_RETRIES = 2;
 
@@ -97,9 +99,9 @@ const callGemini = async (systemPrompt, userMessage, responseSchema = null) => {
 
         if (!response.ok) {
           const errorBody = await response.text();
-          // If model is 404 (unavailable/deprecated) or 429 (rate/quota limited), try next model
-          if (response.status === 404 || response.status === 429) {
-            console.warn(`[Gemini] Model ${model} returned HTTP ${response.status} (${response.status === 429 ? 'Quota/Rate limit' : 'Unavailable'}). Trying next model...`);
+          // If model is 404 (unavailable/deprecated) or 429/503 (rate/quota/busy), try next model
+          if (response.status === 404 || response.status === 429 || response.status === 503) {
+            console.warn(`[Gemini] Model ${model} returned HTTP ${response.status}. Trying next model...`);
             lastError = new Error(`Model ${model} returned ${response.status}: ${errorBody}`);
             break; // Skip further retries on this model and try next model
           }
@@ -110,9 +112,15 @@ const callGemini = async (systemPrompt, userMessage, responseSchema = null) => {
         const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
         if (!rawText) throw new Error('Empty response from Gemini API');
 
-        // With responseSchema the output should already be valid JSON,
-        // but we still safely extract in case of wrapper text
-        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+        // Clean code fence blocks if any
+        let cleanText = rawText.trim();
+        if (cleanText.startsWith('```json')) {
+          cleanText = cleanText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        } else if (cleanText.startsWith('```')) {
+          cleanText = cleanText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+        }
+
+        const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
         if (!jsonMatch) throw new Error('Could not extract JSON from Gemini response');
 
         return JSON.parse(jsonMatch[0]);
@@ -428,6 +436,19 @@ Rules:
 - The ideal_answer should list key concepts, not be a complete answer
 `.trim();
 
+const GEN_QUESTION_SCHEMA = {
+  type: 'object',
+  properties: {
+    text: { type: 'string' },
+    topic: { type: 'string' },
+    difficulty: { type: 'string', enum: ['easy', 'medium', 'hard'] },
+    question_type: { type: 'string', enum: ['conceptual', 'coding', 'debugging', 'scenario', 'system_design', 'hr', 'behavioral'] },
+    ideal_answer: { type: 'string' },
+    tags: { type: 'array', items: { type: 'string' } },
+  },
+  required: ['text', 'topic', 'difficulty', 'question_type', 'ideal_answer', 'tags'],
+};
+
 const mockGenerateQuestion = (role, topic, difficulty, interviewType) => {
   const mockQuestions = {
     technical: [
@@ -497,10 +518,10 @@ Topic: ${topic || 'General'}
 Difficulty Pool: ${difficulty || 'medium'} (HARD BOUNDARY — do NOT generate a question outside this difficulty)
 Progression Level within pool: ${subDifficulty} — ${subLevelGuidance}
 ${avoidTopics}
-Previously Asked Questions (avoid repeating these concepts):
-${askedTexts.slice(-6).map((t, i) => `${i + 1}. ${t}`).join('\n') || 'None'}`;
+Previously Asked Questions (MUST be distinctly different, do NOT repeat these questions or concepts):
+${askedTexts.slice(-10).map((t, i) => `${i + 1}. ${t}`).join('\n') || 'None'}`;
 
-    const parsed = await callLLM(systemPrompt, userMessage, 700);
+    const parsed = await callLLM(systemPrompt, userMessage, 700, GEN_QUESTION_SCHEMA);
 
     if (!parsed.text) throw new Error('Generated question missing text field');
 

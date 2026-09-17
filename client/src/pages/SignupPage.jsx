@@ -15,7 +15,13 @@ const SignupPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const EMAIL_REGEX = /^[a-zA-Z0-9](?:[a-zA-Z0-9._%+-]*[a-zA-Z0-9])?@[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,}$/;
+  const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  const validateEmail = (val) => {
+    if (!val || !val.trim()) return 'Email address is required.';
+    if (!EMAIL_REGEX.test(val.trim())) return 'Email is not correct. Please enter a valid email address (e.g. name@example.com).';
+    return '';
+  };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -24,17 +30,18 @@ const SignupPage = () => {
   };
 
   const handleEmailBlur = () => {
-    if (form.email && !EMAIL_REGEX.test(form.email)) {
-      setEmailError('Please enter a valid email address.');
-    } else {
-      setEmailError('');
+    if (form.email) {
+      setEmailError(validateEmail(form.email));
     }
   };
 
   const validate = () => {
     if (!form.name.trim()) return 'Name is required.';
-    if (!form.email.trim()) return 'Email is required.';
-    if (!EMAIL_REGEX.test(form.email)) return 'Please enter a valid email address.';
+    const emailErr = validateEmail(form.email);
+    if (emailErr) {
+      setEmailError(emailErr);
+      return emailErr;
+    }
     if (form.password.length < 6) return 'Password must be at least 6 characters.';
     if (form.password !== form.confirmPassword) return 'Passwords do not match.';
     return null;
@@ -43,9 +50,15 @@ const SignupPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationError = validate();
-    if (validationError) { setError(validationError); return; }
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
     setLoading(true);
+    setError('');
+    setEmailError('');
+
     try {
       const { data } = await api.post('/auth/signup', {
         name: form.name.trim(),
@@ -57,7 +70,13 @@ const SignupPage = () => {
       // Redirect to email verification
       navigate('/verify-email', { replace: true });
     } catch (err) {
-      setError(err.response?.data?.error || 'Signup failed. Please try again.');
+      const errData = err.response?.data;
+      const errMsg = errData?.error || 'Signup failed. Please try again.';
+      if (errData?.field === 'email' || errData?.emailExists || errMsg.toLowerCase().includes('email')) {
+        setEmailError(errMsg);
+      } else {
+        setError(errMsg);
+      }
     } finally {
       setLoading(false);
     }

@@ -17,35 +17,48 @@ const LoginPage = () => {
   const location = useLocation();
   const from = location.state?.from?.pathname || '/dashboard';
 
-  const EMAIL_REGEX = /^[a-zA-Z0-9](?:[a-zA-Z0-9._%+-]*[a-zA-Z0-9])?@[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,}$/;
+  const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   const validateEmail = (val) => {
-    if (!val) return 'Email is required.';
-    if (!EMAIL_REGEX.test(val)) return 'Please enter a valid email address.';
+    if (!val || !val.trim()) return 'Email address is required.';
+    if (!EMAIL_REGEX.test(val.trim())) return 'Email is not correct. Please enter a valid email address (e.g. name@example.com).';
     return '';
   };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError('');
-    if (e.target.name === 'email') setEmailError('');
+    if (e.target.name === 'email') {
+      setEmailError('');
+    }
   };
 
   const handleEmailBlur = () => {
-    setEmailError(validateEmail(form.email));
+    if (form.email) {
+      setEmailError(validateEmail(form.email));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const emailErr = validateEmail(form.email);
-    if (emailErr) { setEmailError(emailErr); return; }
+    if (emailErr) {
+      setEmailError(emailErr);
+      return;
+    }
     if (!form.password) {
-      setError('Please fill in all fields.');
+      setError('Please enter your password.');
       return;
     }
     setLoading(true);
+    setError('');
+    setEmailError('');
+
     try {
-      const { data } = await api.post('/auth/login', form);
+      const { data } = await api.post('/auth/login', {
+        email: form.email.trim(),
+        password: form.password,
+      });
 
       // Handle unverified email — redirect to verification
       if (data.requiresVerification) {
@@ -64,7 +77,13 @@ const LoginPage = () => {
         navigate(from, { replace: true });
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed. Please try again.');
+      const errData = err.response?.data;
+      const errMsg = errData?.error || 'Login failed. Please try again.';
+      if (errData?.field === 'email' || errData?.emailNotFound || errMsg.toLowerCase().includes('email')) {
+        setEmailError(errMsg);
+      } else {
+        setError(errMsg);
+      }
     } finally {
       setLoading(false);
     }
