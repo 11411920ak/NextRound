@@ -36,22 +36,21 @@ const ClerkAppWrapper = ({ children }) => {
     <ClerkProvider
       publishableKey={clerkPubKey}
       appearance={{
-        baseTheme: dark,
         variables: {
-          colorPrimary: '#6366f1',
-          colorBackground: '#0f172a',
-          colorInputBackground: '#1e293b',
-          colorInputText: '#f8fafc',
+          colorPrimary: '#7c3aed',
+          colorBackground: '#ffffff',
+          colorInputBackground: '#f8fafc',
+          colorInputText: '#0f172a',
           colorTextOnPrimaryBackground: '#ffffff',
-          borderRadius: '0.75rem',
+          borderRadius: '0.875rem',
         },
         elements: {
-          card: 'bg-dark-900 border border-white/10 shadow-2xl backdrop-blur-xl',
+          card: 'bg-white border border-slate-200 shadow-2xl rounded-2xl',
           formButtonPrimary:
-            'bg-gradient-to-r from-brand-500 to-violet-600 hover:from-brand-600 hover:to-violet-700 text-white font-medium shadow-lg shadow-brand-500/25 transition-all',
+            'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-medium shadow-lg shadow-violet-500/25 transition-all',
           socialButtonsBlockButton:
-            'bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all',
-          footerActionLink: 'text-brand-400 hover:text-brand-300 font-medium',
+            'bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all shadow-sm',
+          footerActionLink: 'text-violet-600 hover:text-violet-700 font-medium',
         },
       }}
     >

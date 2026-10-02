@@ -15,7 +15,8 @@ import {
   Clock,
   ArrowRight,
   Sparkles,
-  Layers,
+  Zap,
+  CheckCircle2,
 } from 'lucide-react';
 import { ROLES } from '../constants/roles';
 
@@ -35,14 +36,22 @@ const formatDuration = (start, end) => {
 const getScoreColor = (s) => {
   if (!s && s !== 0) return 'text-slate-500';
   if (s >= 8) return 'text-emerald-400';
-  if (s >= 6) return 'text-blue-400';
-  if (s >= 4) return 'text-yellow-400';
-  return 'text-red-400';
+  if (s >= 6) return 'text-violet-400';
+  if (s >= 4) return 'text-amber-400';
+  return 'text-rose-400';
+};
+
+const getScoreBg = (s) => {
+  if (!s && s !== 0) return 'bg-slate-500/10 border-slate-500/20 text-slate-400';
+  if (s >= 8) return 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400';
+  if (s >= 6) return 'bg-violet-500/15 border-violet-500/30 text-violet-300';
+  if (s >= 4) return 'bg-amber-500/15 border-amber-500/30 text-amber-300';
+  return 'bg-rose-500/15 border-rose-500/30 text-rose-400';
 };
 
 const getRoleBadge = (role) => {
   const found = ROLES.find((r) => r.id === role);
-  return found?.badge || 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+  return found?.badge || 'bg-violet-500/10 text-violet-300 border-violet-500/20';
 };
 
 const DashboardPage = () => {
@@ -75,123 +84,186 @@ const DashboardPage = () => {
     : false;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 animate-slide-up">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 animate-fade-in relative z-10">
+      {/* Ambient background glows */}
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-violet-400/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/2 left-10 w-80 h-80 bg-purple-400/8 rounded-full blur-[120px] pointer-events-none" />
+
+      {/* ── Top Header ────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10 pb-8 border-b border-slate-200/70">
         <div>
-          <span className="section-label">Dashboard</span>
-          <h1 className="text-3xl font-bold text-white mt-1">
-            Welcome back, <span className="gradient-text">{user?.name?.split(' ')[0] || 'there'}</span> 👋
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-50 border border-violet-200/80 text-xs font-semibold text-violet-700 mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+            <span>AI Practice Suite Ready</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            Welcome back, <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">{user?.name?.split(' ')[0] || 'there'}</span> 👋
           </h1>
-          <p className="text-slate-400 mt-1 text-sm">Track and practice your interview performance over time.</p>
+          <p className="text-slate-500 text-sm mt-1">
+            Conduct voice mock interviews and analyze your resume concurrently.
+          </p>
         </div>
-        <Link to="/interview/setup" className="btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">New Session</span>
-        </Link>
+
+        <div className="flex items-center gap-3">
+          <Link to="/interview/setup" className="btn-pill-primary text-xs font-semibold flex items-center gap-2 py-2.5 px-5 shadow-md shadow-violet-500/25">
+            <Plus className="w-4 h-4" />
+            <span>New Session</span>
+          </Link>
+          <Link to="/resume" className="btn-pill-outline text-xs font-semibold flex items-center gap-2 py-2 px-4">
+            <FileText className="w-3.5 h-3.5 text-violet-600" />
+            <span>Resume Analyzer</span>
+          </Link>
+        </div>
       </div>
 
-      {/* Concurrent Core Features */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-3">
-          <p className="section-label">Core Capabilities</p>
-          <span className="text-xs text-brand-400/80 font-medium flex items-center gap-1">
-            <Sparkles className="w-3 h-3" /> Practice interviews & analyze resume concurrently
+      {/* ── Two Concurrent Core Capabilities ─────────────────────── */}
+      <div className="mb-12">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+            Concurrent Capabilities
+          </span>
+          <span className="text-xs text-violet-600 font-medium flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5" /> Both tools ready simultaneously
           </span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Card 1: AI Mock Interview */}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Card 1: AI Mock Interview Simulator */}
           <Link
             to="/interview/setup"
-            className="glass-card-hover p-6 rounded-2xl relative overflow-hidden group border border-brand-500/25 hover:border-brand-500/50 flex flex-col justify-between"
+            className="p-7 rounded-3xl bg-white border border-slate-200/90 hover:border-violet-400 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:shadow-violet-500/10 group transition-all duration-300 flex flex-col justify-between"
           >
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500/20 to-brand-600/20 border border-brand-500/30 flex items-center justify-center text-brand-400 group-hover:scale-110 transition-transform">
+              <div className="flex items-center justify-between mb-5">
+                <div className="w-12 h-12 rounded-2xl bg-violet-50 border border-violet-200/80 flex items-center justify-center text-violet-600 group-hover:scale-105 transition-transform">
                   <BrainCircuit className="w-6 h-6" />
                 </div>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-brand-500/15 text-brand-300 border border-brand-500/30">
-                  Feature 1 • Interview Prep
+                <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-violet-50 text-violet-700 border border-violet-200/70">
+                  Feature 1 • Voice Practice
                 </span>
               </div>
-              <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-brand-300 transition-colors">
-                AI Mock Interview
+
+              <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-violet-600 transition-colors">
+                AI Mock Interview Simulator
               </h3>
-              <p className="text-slate-400 text-xs leading-relaxed mb-4">
-                Simulate role-tailored technical & HR interviews with adaptive difficulty, STAR answer evaluation, and instant feedback.
+              <p className="text-slate-600 text-xs leading-relaxed mb-6">
+                Practice realistic technical & HR questions with adaptive difficulty, live microphone input, and real-time STAR evaluation scoring.
               </p>
+
+              <div className="flex items-center gap-3 text-xs text-slate-600 mb-6 py-2 px-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                <span className="flex items-center gap-1 text-emerald-600 font-medium">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> 4-Factor Evaluation
+                </span>
+                <span className="text-slate-300">•</span>
+                <span className="text-slate-600">STAR Coaching</span>
+              </div>
             </div>
-            <div className="flex items-center text-brand-400 text-xs font-semibold gap-1.5 group-hover:translate-x-1 transition-all pt-2 border-t border-white/5">
-              Launch Interview Session <ArrowRight className="w-3.5 h-3.5" />
+
+            <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-xs font-semibold text-violet-600 group-hover:text-violet-700">
+              <span>Start Practice Session</span>
+              <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
 
-          {/* Card 2: Resume Analyzer */}
+          {/* Card 2: Smart Resume ATS Analyzer */}
           <Link
             to="/resume"
-            className="glass-card-hover p-6 rounded-2xl relative overflow-hidden group border border-violet-500/25 hover:border-violet-500/50 flex flex-col justify-between"
+            className="p-7 rounded-3xl bg-white border border-slate-200/90 hover:border-pink-400 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:shadow-pink-500/10 group transition-all duration-300 flex flex-col justify-between"
           >
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-600/20 border border-violet-500/30 flex items-center justify-center text-violet-400 group-hover:scale-110 transition-transform">
+              <div className="flex items-center justify-between mb-5">
+                <div className="w-12 h-12 rounded-2xl bg-pink-50 border border-pink-200/80 flex items-center justify-center text-pink-600 group-hover:scale-105 transition-transform">
                   <FileText className="w-6 h-6" />
                 </div>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/30">
-                  Feature 2 • Skill Gap Analysis
+                <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-pink-50 text-pink-700 border border-pink-200/70">
+                  Feature 2 • ATS Skill Gap
                 </span>
               </div>
-              <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-violet-300 transition-colors">
-                Resume Analyzer
+
+              <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-pink-600 transition-colors">
+                Resume ATS Analyzer
               </h3>
-              <p className="text-slate-400 text-xs leading-relaxed mb-4">
-                Upload your resume (PDF/DOCX) for automated AI skill extraction, target role gap comparison, and tailored study recommendations.
+              <p className="text-slate-600 text-xs leading-relaxed mb-6">
+                Upload your PDF/DOCX resume for automated AI skill extraction, target role requirement comparison, and customized study roadmaps.
               </p>
+
+              <div className="flex items-center gap-3 text-xs text-slate-600 mb-6 py-2 px-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                <span className="flex items-center gap-1 text-pink-600 font-medium">
+                  <Target className="w-3.5 h-3.5" /> 94% Accuracy Match
+                </span>
+                <span className="text-slate-300">•</span>
+                <span className="text-slate-600">Instant Gap Analysis</span>
+              </div>
             </div>
-            <div className="flex items-center text-violet-400 text-xs font-semibold gap-1.5 group-hover:translate-x-1 transition-all pt-2 border-t border-white/5">
-              Analyze Your Resume <ArrowRight className="w-3.5 h-3.5" />
+
+            <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-xs font-semibold text-pink-600 group-hover:text-pink-700">
+              <span>Upload & Analyze Resume</span>
+              <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
             </div>
           </Link>
         </div>
       </div>
 
-      {/* Stats row */}
+      {/* ── Performance Stats Row ──────────────────────────────────── */}
       {totalSessions > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          {[
-            { icon: FileText, label: 'Total Sessions', value: totalSessions, color: 'text-brand-400' },
-            { icon: Target, label: 'Avg Score', value: `${avgScore}/10`, color: getScoreColor(avgScore) },
-            { icon: Trophy, label: 'Best Score', value: `${bestScore}/10`, color: 'text-yellow-400' },
-            { icon: TrendingUp, label: 'Trend', value: improving ? '↑ Improving' : '↓ Varies', color: improving ? 'text-emerald-400' : 'text-slate-400' },
-          ].map(({ icon: Icon, label, value, color }) => (
-            <div key={label} className="glass-card p-4">
-              <Icon className={`w-4 h-4 ${color} mb-2`} />
-              <p className={`text-xl font-bold ${color}`}>{value}</p>
-              <p className="text-xs text-slate-500 mt-0.5">{label}</p>
-            </div>
-          ))}
+        <div className="mb-12">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4 block">
+            Performance Overview
+          </span>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[
+              { icon: FileText, label: 'Total Sessions', value: totalSessions, color: 'text-violet-600', bg: 'bg-violet-50' },
+              { icon: Target, label: 'Average Score', value: `${avgScore}/10`, color: getScoreColor(avgScore), bg: 'bg-slate-50' },
+              { icon: Trophy, label: 'Highest Score', value: `${bestScore}/10`, color: 'text-amber-600', bg: 'bg-amber-50' },
+              {
+                icon: TrendingUp,
+                label: 'Progress Trend',
+                value: improving ? '↑ Improving' : 'Consistent',
+                color: improving ? 'text-emerald-600' : 'text-slate-600',
+                bg: 'bg-emerald-50',
+              },
+            ].map(({ icon: Icon, label, value, color, bg }) => (
+              <div key={label} className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
+                <div className={`w-8 h-8 rounded-xl ${bg} flex items-center justify-center ${color} mb-3`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                <p className={`text-2xl font-black ${color}`}>{value}</p>
+                <p className="text-xs text-slate-500 mt-1 font-medium">{label}</p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Sessions list */}
+      {/* ── Sessions List ─────────────────────────────────────────── */}
       {loading ? (
-        <div className="flex justify-center py-20"><LoadingSpinner size="lg" text="Loading your sessions..." /></div>
+        <div className="flex justify-center py-20">
+          <LoadingSpinner size="lg" text="Loading your sessions..." />
+        </div>
       ) : reports.length === 0 ? (
-        /* Empty state */
-        <div className="text-center py-20">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-500/20 to-violet-500/20 border border-brand-500/20 flex items-center justify-center mx-auto mb-5">
-            <BrainCircuit className="w-10 h-10 text-brand-400" />
+        /* Empty State */
+        <div className="text-center py-16 px-4 rounded-3xl bg-white border border-slate-200/80 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-violet-50 border border-violet-200 flex items-center justify-center mx-auto mb-4 text-violet-600">
+            <BrainCircuit className="w-8 h-8" />
           </div>
-          <h2 className="text-xl font-semibold text-white mb-2">No sessions yet</h2>
-          <p className="text-slate-400 text-sm mb-6 max-w-xs mx-auto">
-            Start your first mock interview session and get AI-powered feedback on your answers.
+          <h2 className="text-xl font-bold text-slate-900 mb-2">No interview sessions yet</h2>
+          <p className="text-slate-500 text-xs sm:text-sm mb-6 max-w-sm mx-auto leading-relaxed">
+            Start your first mock interview or upload your resume above to generate customized questions and feedback.
           </p>
-          <Link to="/interview/setup" className="btn-primary inline-flex items-center gap-2">
-            <Plus className="w-4 h-4" /> Start Your First Session
-          </Link>
+          <div className="flex items-center justify-center gap-3">
+            <Link to="/interview/setup" className="btn-pill-primary text-xs font-semibold py-2.5 px-6 shadow-md shadow-violet-500/25">
+              Start First Interview
+            </Link>
+            <Link to="/resume" className="btn-pill-outline text-xs font-semibold py-2.5 px-5">
+              Analyze Resume
+            </Link>
+          </div>
         </div>
       ) : (
         <div>
-          <p className="section-label mb-4">Past Sessions</p>
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4 block">
+            Recent Practice History
+          </span>
           <div className="space-y-3">
             {reports.map((report) => {
               const sess = report.session_id;
@@ -199,56 +271,47 @@ const DashboardPage = () => {
                 <Link
                   key={report._id}
                   to={`/report/${sess?._id || report.session_id}`}
-                  className="glass-card-hover p-5 flex items-center gap-4 group block"
+                  className="p-5 rounded-2xl bg-white hover:bg-slate-50/80 border border-slate-200/80 hover:border-violet-300 shadow-sm transition-all flex items-center gap-4 group block"
                 >
                   {/* Score badge */}
-                  <div className={`flex-shrink-0 w-12 h-12 rounded-xl border flex items-center justify-center font-bold text-lg ${
-                    report.avg_score >= 8
-                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                      : report.avg_score >= 6
-                      ? 'bg-blue-500/10 border-blue-500/20 text-blue-400'
-                      : report.avg_score >= 4
-                      ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400'
-                      : 'bg-red-500/10 border-red-500/20 text-red-400'
-                  }`}>
+                  <div className={`flex-shrink-0 w-12 h-12 rounded-xl border flex items-center justify-center font-bold text-base ${getScoreBg(report.avg_score)}`}>
                     {report.avg_score}
                   </div>
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${getRoleBadge(sess?.role)}`}>
+                      <span className={`text-xs px-2.5 py-0.5 rounded-full border font-semibold ${getRoleBadge(sess?.role)}`}>
                         {sess?.role || 'Interview'}
                       </span>
                       {sess?.difficulty && (
                         <span className="text-xs text-slate-500 capitalize">{sess.difficulty}</span>
                       )}
                       {report.total_responses && (
-                        <span className="text-xs text-slate-600">{report.total_responses} questions</span>
+                        <span className="text-xs text-slate-500">• {report.total_responses} questions</span>
                       )}
                     </div>
                     <div className="flex items-center gap-3 text-xs text-slate-500">
                       <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
+                        <Calendar className="w-3 h-3 text-slate-400" />
                         {formatDate(report.generated_at)}
                       </span>
                       {sess?.started_at && sess?.ended_at && (
                         <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
+                          <Clock className="w-3 h-3 text-slate-400" />
                           {formatDuration(sess.started_at, sess.ended_at)}
                         </span>
                       )}
                     </div>
-                    {/* Strengths preview */}
                     {report.strengths?.length > 0 && (
-                      <p className="text-xs text-emerald-400/70 mt-1 truncate">
+                      <p className="text-xs text-emerald-600 mt-1 truncate font-medium">
                         ✓ {report.strengths[0]}
                       </p>
                     )}
                   </div>
 
                   {/* Arrow */}
-                  <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-brand-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-violet-600 group-hover:translate-x-1 transition-all flex-shrink-0" />
                 </Link>
               );
             })}

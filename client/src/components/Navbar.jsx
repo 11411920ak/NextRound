@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { UserButton, SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react';
-import { BrainCircuit, LayoutDashboard, Plus, FileText } from 'lucide-react';
+import { UserButton, SignedIn, SignedOut, SignInButton, SignUpButton } from '@clerk/clerk-react';
+import { LayoutDashboard, Plus, FileText, ArrowRight, Sparkles } from 'lucide-react';
 
 const Navbar = () => {
   const { user } = useAuth();
@@ -13,77 +13,96 @@ const Navbar = () => {
     { to: '/interview/setup', icon: Plus, label: 'New Session' },
   ];
 
+  const landingNavLinks = [
+    { href: '#features', label: 'Features' },
+    { href: '#capabilities', label: 'Capabilities' },
+    { href: '#how-it-works', label: 'How It Works' },
+  ];
+
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-dark-950/80 backdrop-blur-md border-b border-white/8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-violet-600 flex items-center justify-center shadow-lg shadow-brand-500/25 group-hover:shadow-brand-500/40 transition-shadow">
-              <BrainCircuit className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-lg text-white">
-              Next<span className="gradient-text">Round</span>
+    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center py-4 px-4 pointer-events-none">
+      <div className="w-full max-w-6xl flex items-center justify-between px-5 py-2.5 rounded-full bg-white/90 backdrop-blur-xl border border-slate-200/80 shadow-lg shadow-slate-200/50 pointer-events-auto">
+        {/* Brand Logo with Colorful Waveform Mark */}
+        <Link to="/" className="flex items-center gap-2.5 group">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-violet-600 via-purple-500 to-amber-400 flex items-center justify-center shadow-md shadow-purple-500/25 group-hover:scale-105 transition-transform">
+            <span className="flex items-center gap-0.5">
+              <span className="w-0.5 h-3 bg-white rounded-full animate-pulse" />
+              <span className="w-0.5 h-4.5 bg-white rounded-full animate-pulse delay-75" />
+              <span className="w-0.5 h-2.5 bg-white rounded-full animate-pulse delay-150" />
             </span>
-          </Link>
+          </div>
+          <span className="font-bold text-base text-slate-900 tracking-tight">
+            Next<span className="bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">Round</span>
+          </span>
+        </Link>
 
-          {/* Signed In View: Full internal navigation bar */}
+        {/* Center Pill Menu */}
+        <div className="hidden md:flex items-center gap-1 px-3 py-1 rounded-full bg-slate-100/80 border border-slate-200/60">
           <SignedIn>
-            <div className="hidden md:flex items-center gap-1">
-              {navLinks.map(({ to, icon: Icon, label }) => (
-                <Link
-                  key={to}
-                  to={to}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isActive(to)
-                      ? 'bg-brand-600/20 text-brand-400 border border-brand-500/30'
-                      : 'text-slate-400 hover:text-white hover:bg-white/8'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {label}
-                </Link>
-              ))}
-            </div>
-
-            <div className="flex items-center gap-3">
-              <span className="hidden sm:block text-sm text-slate-300 font-medium">
-                {user?.name?.split(' ')[0] || 'User'}
-              </span>
-              <div className="flex items-center justify-center">
-                <UserButton
-                  afterSignOutUrl="/"
-                  appearance={{
-                    elements: {
-                      avatarBox: 'w-8 h-8 ring-2 ring-brand-500/30 hover:ring-brand-500/60 transition-all',
-                    },
-                  }}
-                />
-              </div>
-            </div>
+            {navLinks.map(({ to, icon: Icon, label }) => (
+              <Link
+                key={to}
+                to={to}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  isActive(to)
+                    ? 'bg-violet-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {label}
+              </Link>
+            ))}
           </SignedIn>
 
-          {/* Signed Out View: Clean and minimal without internal nav bar, contains Sign In */}
           <SignedOut>
-            <div className="flex items-center gap-3">
-              <SignInButton mode="modal" fallbackRedirectUrl="/dashboard" forceRedirectUrl="/dashboard">
-                <button className="btn-ghost text-sm font-medium hover:text-white">
-                  Sign In
-                </button>
-              </SignInButton>
+            {landingNavLinks.map(({ href, label }) => (
               <a
-                href="#auth-section"
-                className="btn-primary text-sm py-2 px-4 shadow-lg shadow-brand-500/25 hidden sm:inline-flex"
+                key={href}
+                href={href}
+                className="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/80 transition-all"
               >
-                Get Started Free
+                {label}
               </a>
-            </div>
+            ))}
+          </SignedOut>
+        </div>
+
+        {/* Right Side Controls */}
+        <div className="flex items-center gap-2.5">
+          <SignedIn>
+            <span className="hidden sm:inline-block text-xs text-slate-700 font-medium px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200/60">
+              {user?.name?.split(' ')[0] || 'User'}
+            </span>
+            <UserButton
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: 'w-7 h-7 ring-2 ring-slate-300 hover:ring-slate-500 transition-all',
+                },
+              }}
+            />
+          </SignedIn>
+
+          <SignedOut>
+            <SignInButton mode="modal" fallbackRedirectUrl="/dashboard" forceRedirectUrl="/dashboard">
+              <button className="px-4 py-1.5 rounded-full text-xs font-medium text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer">
+                Sign In
+              </button>
+            </SignInButton>
+
+            <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard" forceRedirectUrl="/dashboard">
+              <button className="bg-slate-900 hover:bg-slate-800 text-white py-1.5 px-4 text-xs font-semibold rounded-full flex items-center gap-1.5 shadow-sm border border-slate-700/60 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]">
+                <span>Get Started</span>
+                <ArrowRight className="w-3 h-3 text-slate-300" />
+              </button>
+            </SignUpButton>
           </SignedOut>
         </div>
       </div>
-    </nav>
+    </header>
   );
 };
 
