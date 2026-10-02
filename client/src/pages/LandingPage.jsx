@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { SignIn, SignUp, useUser } from '@clerk/clerk-react';
+import { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useUser, SignInButton, SignUpButton } from '@clerk/clerk-react';
+import heroMockup from '../assets/hero-mockup.png';
 import {
   BrainCircuit,
   FileText,
@@ -9,14 +10,12 @@ import {
   ArrowRight,
   ShieldCheck,
   Target,
-  TrendingUp,
-  Award,
+  Zap,
 } from 'lucide-react';
 
 const LandingPage = () => {
   const { isSignedIn, isLoaded } = useUser();
   const navigate = useNavigate();
-  const [authMode, setAuthMode] = useState('signup'); // Default to Sign Up for new visitors
 
   // If user is already signed in, immediately route to dashboard
   useEffect(() => {
@@ -31,32 +30,48 @@ const LandingPage = () => {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-brand-600/15 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute top-1/3 right-10 w-[450px] h-[450px] bg-violet-600/10 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* Hero Section with Embedded Auth Container */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20 lg:pt-16 lg:pb-28">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+      {/* Hero Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20 lg:pt-14 lg:pb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center">
           {/* Left Column: Product Value Proposition */}
-          <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+          <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-brand-300 shadow-inner">
               <Sparkles className="w-3.5 h-3.5 text-brand-400" />
               <span>Next-Gen AI Interview Prep & Resume Intelligence</span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.15]">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.12]">
               Ace Your Next Round with{' '}
               <span className="gradient-text">Adaptive AI Coaching</span>
             </h1>
 
-            <p className="text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed">
+            <p className="text-base sm:text-lg text-slate-300 max-w-xl leading-relaxed">
               Prepare for real-world tech & behavioral interviews with instant STAR scoring,
-              and analyze your resume against industry roles to identify skill gaps before the recruiter does.
+              and analyze your resume against industry roles to identify skill gaps before recruiters do.
             </p>
 
+            {/* CTAs */}
+            <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-4">
+              <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard" forceRedirectUrl="/dashboard">
+                <button className="btn-primary py-3.5 px-7 text-sm font-semibold flex items-center gap-2 shadow-xl shadow-brand-500/25 hover:shadow-brand-500/40">
+                  <span>Get Started Free</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </SignUpButton>
+
+              <SignInButton mode="modal" fallbackRedirectUrl="/dashboard" forceRedirectUrl="/dashboard">
+                <button className="btn-ghost py-3.5 px-6 text-sm font-semibold border border-white/10 hover:border-white/20 hover:bg-white/5">
+                  Sign In
+                </button>
+              </SignInButton>
+            </div>
+
             {/* Key feature pills */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-left">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 text-left">
               {[
                 { title: 'AI Mock Interviews', desc: 'Adaptive difficulty with real-time STAR evaluation' },
                 { title: 'Resume ATS Analyzer', desc: 'Skill extraction & role gap analysis for tech jobs' },
-                { title: 'Question Deduplication', desc: 'Never repeat questions in the same session' },
+                { title: 'Question Deduplication', desc: 'Questions are never repeated in a session' },
                 { title: 'Comprehensive Reports', desc: 'Strengths, weaknesses, and improvement radar' },
               ].map(({ title, desc }) => (
                 <div key={title} className="flex items-start gap-2.5 p-3 rounded-xl bg-white/[0.03] border border-white/5">
@@ -69,70 +84,58 @@ const LandingPage = () => {
               ))}
             </div>
 
-            {/* Social Proof */}
-            <div className="pt-4 flex items-center justify-center lg:justify-start gap-6 text-xs text-slate-400">
+            {/* Trust Badges */}
+            <div className="pt-2 flex items-center justify-center lg:justify-start gap-6 text-xs text-slate-400">
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 <span>Instant Clerk Authentication</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Target className="w-4 h-4 text-brand-400" />
-                <span>Tailored for SDE, Frontend, Data & HR</span>
+                <span>SDE, Frontend, Backend & Data</span>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Direct Sign Up & Sign In Container */}
-          <div id="auth-section" className="lg:col-span-5 flex flex-col items-center">
-            <div className="w-full max-w-md glass-card p-6 sm:p-8 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-xl relative">
-              {/* Tab Selector: Sign Up & Sign In contained on the page */}
-              <div className="flex p-1 rounded-xl bg-white/5 border border-white/10 mb-6 shadow-inner">
-                <button
-                  type="button"
-                  onClick={() => setAuthMode('signup')}
-                  className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
-                    authMode === 'signup'
-                      ? 'bg-gradient-to-r from-brand-500 to-violet-600 text-white shadow-md shadow-brand-500/25'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Create Account
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAuthMode('signin')}
-                  className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
-                    authMode === 'signin'
-                      ? 'bg-gradient-to-r from-brand-500 to-violet-600 text-white shadow-md shadow-brand-500/25'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Sign In
-                </button>
+          {/* Right Column: Platform Mockup Showcase Image */}
+          <div className="lg:col-span-6 flex flex-col items-center">
+            <div className="relative group w-full max-w-lg lg:max-w-none">
+              {/* Vibrant neon gradient backlight */}
+              <div className="absolute -inset-1.5 bg-gradient-to-r from-brand-500/40 via-purple-600/40 to-violet-500/40 rounded-3xl blur-2xl opacity-60 group-hover:opacity-80 transition duration-700 pointer-events-none" />
+
+              {/* Main Image Frame */}
+              <div className="relative rounded-3xl overflow-hidden border border-white/15 shadow-2xl bg-dark-950/70 backdrop-blur-xl">
+                <img
+                  src={heroMockup}
+                  alt="NextRound AI Mock Interview and Resume Analysis Platform Interface"
+                  className="w-full h-auto object-cover transform group-hover:scale-[1.01] transition-transform duration-500"
+                />
               </div>
 
-              {/* Clerk Sign Up / Sign In Form */}
-              <div className="flex justify-center w-full">
-                {authMode === 'signup' ? (
-                  <SignUp
-                    routing="hash"
-                    signInUrl="#signin"
-                    fallbackRedirectUrl="/dashboard"
-                    forceRedirectUrl="/dashboard"
-                  />
-                ) : (
-                  <SignIn
-                    routing="hash"
-                    signUpUrl="#signup"
-                    fallbackRedirectUrl="/dashboard"
-                    forceRedirectUrl="/dashboard"
-                  />
-                )}
+              {/* Floating Badge 1: Real-time Evaluation */}
+              <div className="absolute -bottom-5 -left-4 sm:bottom-6 sm:-left-6 glass-card p-3 rounded-2xl border border-brand-500/40 shadow-2xl flex items-center gap-3 backdrop-blur-md animate-fade-in">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500/30 to-violet-600/30 border border-brand-400/40 flex items-center justify-center text-brand-300">
+                  <BrainCircuit className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <span>AI Interview Score</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                  </div>
+                  <div className="text-[11px] text-emerald-400 font-semibold">9.5/10 • Strong STAR Structure</div>
+                </div>
               </div>
 
-              <p className="text-[11px] text-center text-slate-500 mt-4">
-                By continuing, you agree to our Terms of Service and Privacy Policy.
-              </p>
+              {/* Floating Badge 2: Resume ATS Skill Match */}
+              <div className="hidden sm:flex absolute -top-4 -right-4 glass-card p-3 rounded-2xl border border-violet-500/40 shadow-2xl items-center gap-3 backdrop-blur-md animate-fade-in">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/30 to-purple-600/30 border border-violet-400/40 flex items-center justify-center text-violet-300">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-white">ATS Resume Analysis</div>
+                  <div className="text-[11px] text-violet-300 font-semibold">94% Skill Fit Verified</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -144,7 +147,7 @@ const LandingPage = () => {
           <span className="section-label">Main Functionality</span>
           <h2 className="text-3xl font-bold text-white mt-1">Two Powerful Tools In One Platform</h2>
           <p className="text-slate-400 text-sm mt-2">
-            Sign in above to unlock both mock interview simulations and resume ATS intelligence concurrently.
+            Practice mock interview simulations and analyze your resume concurrently from your dashboard.
           </p>
         </div>
 
