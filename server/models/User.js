@@ -20,14 +20,20 @@ const userSchema = new mongoose.Schema(
     },
     password_hash: {
       type: String,
-      required: function () { return this.authProvider !== 'google'; },
+      required: function () { return this.authProvider === 'local'; },
       minlength: [6, 'Password must be at least 6 characters'],
       select: false, // Never returned in queries by default
     },
     authProvider: {
       type: String,
-      enum: ['local', 'google'],
+      enum: ['local', 'google', 'clerk'],
       default: 'local',
+    },
+    clerkId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      default: null,
     },
     isVerified: {
       type: Boolean,

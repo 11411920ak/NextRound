@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
+import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -12,21 +11,9 @@ import DashboardPage from './pages/DashboardPage';
 import ProfileCompletePage from './pages/ProfileCompletePage';
 import ResumeUploadPage from './pages/ResumeUploadPage';
 import ResumeAnalysisPage from './pages/ResumeAnalysisPage';
-import VerifyEmailPage from './pages/VerifyEmailPage';
 
-/**
- * ProfileGuard — wraps protected routes that require a complete profile.
- * Redirects to /profile/complete if the user hasn't filled in their profile yet.
- */
-const ProfileGuard = ({ children }) => {
-  const { user, loading, isAuthenticated } = useAuth();
-  if (loading) return null;
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (user && user.profileComplete === false) {
-    return <Navigate to="/profile/complete" replace />;
-  }
-  return children;
-};
+import LandingPage from './pages/LandingPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -36,22 +23,51 @@ function App() {
           <Navbar />
           <main className="pt-16">
             <Routes>
-              {/* Public Application Routes */}
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/interview/setup" element={<RoleSelectPage />} />
-              <Route path="/interview/:sessionId" element={<InterviewPage />} />
-              <Route path="/report/:sessionId" element={<ReportPage />} />
+              {/* Landing Page with embedded Sign Up and Sign In */}
+              <Route path="/" element={<LandingPage />} />
+
+              {/* Protected Main Features: Directed here once signed in/up */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <DashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/interview/setup"
+                element={
+                  <ProtectedRoute>
+                    <RoleSelectPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/interview/:sessionId"
+                element={
+                  <ProtectedRoute>
+                    <InterviewPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/report/:sessionId"
+                element={
+                  <ProtectedRoute>
+                    <ReportPage />
+                  </ProtectedRoute>
+                }
+              />
 
               <Route path="/resume" element={<ResumeAnalysisPage />} />
               <Route path="/resume/upload" element={<ResumeUploadPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignupPage />} />
-              <Route path="/verify-email" element={<VerifyEmailPage />} />
+              <Route path="/login/*" element={<LoginPage />} />
+              <Route path="/signup/*" element={<SignupPage />} />
               <Route path="/profile/complete" element={<ProfileCompletePage />} />
 
               {/* Default redirect */}
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
 

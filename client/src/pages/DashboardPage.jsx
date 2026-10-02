@@ -3,7 +3,20 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { BrainCircuit, Plus, FileText, ChevronRight, Trophy, Calendar, Target, TrendingUp, Clock } from 'lucide-react';
+import {
+  BrainCircuit,
+  Plus,
+  FileText,
+  ChevronRight,
+  Trophy,
+  Calendar,
+  Target,
+  TrendingUp,
+  Clock,
+  ArrowRight,
+  Sparkles,
+  Layers,
+} from 'lucide-react';
 import { ROLES } from '../constants/roles';
 
 const formatDate = (dateStr) => {
@@ -70,12 +83,75 @@ const DashboardPage = () => {
           <h1 className="text-3xl font-bold text-white mt-1">
             Welcome back, <span className="gradient-text">{user?.name?.split(' ')[0] || 'there'}</span> 👋
           </h1>
-          <p className="text-slate-400 mt-1 text-sm">Track your interview performance over time.</p>
+          <p className="text-slate-400 mt-1 text-sm">Track and practice your interview performance over time.</p>
         </div>
         <Link to="/interview/setup" className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">New Session</span>
         </Link>
+      </div>
+
+      {/* Concurrent Core Features */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <p className="section-label">Core Capabilities</p>
+          <span className="text-xs text-brand-400/80 font-medium flex items-center gap-1">
+            <Sparkles className="w-3 h-3" /> Practice interviews & analyze resume concurrently
+          </span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Card 1: AI Mock Interview */}
+          <Link
+            to="/interview/setup"
+            className="glass-card-hover p-6 rounded-2xl relative overflow-hidden group border border-brand-500/25 hover:border-brand-500/50 flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500/20 to-brand-600/20 border border-brand-500/30 flex items-center justify-center text-brand-400 group-hover:scale-110 transition-transform">
+                  <BrainCircuit className="w-6 h-6" />
+                </div>
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-brand-500/15 text-brand-300 border border-brand-500/30">
+                  Feature 1 • Interview Prep
+                </span>
+              </div>
+              <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-brand-300 transition-colors">
+                AI Mock Interview
+              </h3>
+              <p className="text-slate-400 text-xs leading-relaxed mb-4">
+                Simulate role-tailored technical & HR interviews with adaptive difficulty, STAR answer evaluation, and instant feedback.
+              </p>
+            </div>
+            <div className="flex items-center text-brand-400 text-xs font-semibold gap-1.5 group-hover:translate-x-1 transition-all pt-2 border-t border-white/5">
+              Launch Interview Session <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </Link>
+
+          {/* Card 2: Resume Analyzer */}
+          <Link
+            to="/resume"
+            className="glass-card-hover p-6 rounded-2xl relative overflow-hidden group border border-violet-500/25 hover:border-violet-500/50 flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-600/20 border border-violet-500/30 flex items-center justify-center text-violet-400 group-hover:scale-110 transition-transform">
+                  <FileText className="w-6 h-6" />
+                </div>
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/30">
+                  Feature 2 • Skill Gap Analysis
+                </span>
+              </div>
+              <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-violet-300 transition-colors">
+                Resume Analyzer
+              </h3>
+              <p className="text-slate-400 text-xs leading-relaxed mb-4">
+                Upload your resume (PDF/DOCX) for automated AI skill extraction, target role gap comparison, and tailored study recommendations.
+              </p>
+            </div>
+            <div className="flex items-center text-violet-400 text-xs font-semibold gap-1.5 group-hover:translate-x-1 transition-all pt-2 border-t border-white/5">
+              Analyze Your Resume <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </Link>
+        </div>
       </div>
 
       {/* Stats row */}

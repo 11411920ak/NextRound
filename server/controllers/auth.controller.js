@@ -326,6 +326,75 @@ const googleAuth = async (req, res, next) => {
   }
 };
 
+// ── POST /api/auth/clerk-sync ─────────────────────────────────────────────────
+const clerkSync = async (req, res, next) => {
+  try {
+    const { clerkId, email, name, imageUrl } = req.body;
+
+    if (!clerkId || !email) {
+      return res.status(400).json({ error: 'clerkId and email are required.' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Find user by clerkId or email
+    let user = await User.findOne({
+      $or: [{ clerkId }, { email: normalizedEmail }],
+    });
+
+    let isNewUser = false;
+
+    if (user) {
+      let needsSave = false;
+      if (!user.clerkId) {
+        user.clerkId = clerkId;
+        needsSave = true;
+      }
+      if (!user.isVerified) {
+        user.isVerified = true;
+        needsSave = true;
+      }
+      if (name && (!user.name || user.name === 'User' || user.name === 'Clerk User')) {
+        user.name = name.trim();
+        needsSave = true;
+      }
+      if (needsSave) {
+        await user.save();
+      }
+    } else {
+      user = await User.create({
+        name: name?.trim() || 'Clerk User',
+        email: normalizedEmail,
+        clerkId,
+        authProvider: 'clerk',
+        isVerified: true,
+      });
+      isNewUser = true;
+    }
+
+    const token = generateToken(user._id);
+
+    res.json({
+      message: isNewUser ? 'Account created with Clerk!' : 'Signed in with Clerk.',
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        target_role: user.target_role,
+        isVerified: user.isVerified,
+        profileComplete: user.profileComplete,
+        gender: user.gender,
+        workAs: user.workAs,
+        experience: user.experience,
+      },
+      isNewUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // ── GET /api/auth/me ──────────────────────────────────────────────────────────
 const getMe = async (req, res) => {
   res.json({ user: req.user });
@@ -359,4 +428,4 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
-module.exports = { signup, login, verifyEmail, resendOTP, googleAuth, getMe, updateProfile };
+module.exports = { signup, login, verifyEmail, resendOTP, googleAuth, clerkSync, getMe, updateProfile };

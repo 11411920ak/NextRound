@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.61.10",
+    "@clerk/themes": "^2.4.57",
     "@react-oauth/google": "^0.13.5",
     "axios": "^1.19.0",
     "lucide-react": "^1.30.0",

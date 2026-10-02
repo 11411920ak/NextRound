@@ -224,6 +224,8 @@ NextRound uses a multi-provider LLM strategy:
 |--------|----------|------|-------------|
 | POST | `/api/auth/signup` | ❌ | Create account |
 | POST | `/api/auth/login` | ❌ | Login, get JWT |
+| POST | `/api/auth/google` | ❌ | Google Sign-In verification |
+| POST | `/api/auth/clerk-sync` | ❌ | Clerk user sync & session token |
 | PATCH | `/api/auth/me` | ✅ | Update profile |
 | POST | `/api/session/start` | ✅ | Start interview session |
 | GET | `/api/session/:id` | ✅ | Get session details |

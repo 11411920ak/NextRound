@@ -29,8 +29,10 @@ const getReport = async (req, res, next) => {
 const getDashboard = async (req, res, next) => {
   try {
     const userId = req.user ? req.user._id : null;
-    const query = userId ? { user_id: userId } : {};
-    const reports = await Report.find(query)
+    if (!userId) {
+      return res.json({ reports: [] });
+    }
+    const reports = await Report.find({ user_id: userId })
       .populate('session_id', 'role difficulty started_at ended_at status')
       .sort({ generated_at: -1 })
       .limit(20)
